@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 700" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <rect x="0" y="0" width="1240" height="700" fill="#f7f8fa"/>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrD" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b45309"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="40" y="48" font-size="27" font-weight="700" fill="#0f172a">Fire Logger — System Architecture</text>
+  <text x="40" y="74" font-size="15" fill="#64748b">Albertson Fire Department · Voice-activated dispatch recorder on a Mac mini · WAV master + MP3 per call</text>
+
+  <!-- ============ ZONE 1 : AUDIO PATH ============ -->
+  <rect x="30" y="96" width="1180" height="158" rx="14" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
+  <text x="52" y="124" font-size="13" font-weight="700" letter-spacing="2" fill="#1d4ed8">AUDIO PATH — RADIO TO MAC</text>
+
+  <!-- boxes row 1 -->
+  <g>
+    <rect x="52" y="140" width="180" height="86" rx="10" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
+    <text x="142" y="176" font-size="16" font-weight="600" fill="#0f172a" text-anchor="middle">Motorola Radio</text>
+    <text x="142" y="200" font-size="12.5" fill="#64748b" text-anchor="middle">dispatch audio source</text>
+
+    <rect x="282" y="140" width="196" height="86" rx="10" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
+    <text x="380" y="170" font-size="16" font-weight="600" fill="#0f172a" text-anchor="middle">Minitor Amplified Base</text>
+    <text x="380" y="193" font-size="12.5" fill="#64748b" text-anchor="middle">rear jack = fixed-level out</text>
+    <text x="380" y="211" font-size="12.5" fill="#64748b" text-anchor="middle">knobs drive speakers only</text>
+
+    <rect x="528" y="140" width="170" height="86" rx="10" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
+    <text x="613" y="170" font-size="16" font-weight="600" fill="#0f172a" text-anchor="middle">Sabrent AU-MMSA</text>
+    <text x="613" y="193" font-size="12.5" fill="#64748b" text-anchor="middle">USB sound card · cable in</text>
+    <text x="613" y="211" font-size="12.5" fill="#64748b" text-anchor="middle">pink mic jack (high gain)</text>
+
+    <rect x="748" y="140" width="180" height="86" rx="10" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
+    <text x="838" y="170" font-size="16" font-weight="600" fill="#0f172a" text-anchor="middle">Mac mini (M4)</text>
+    <text x="838" y="193" font-size="12.5" fill="#64748b" text-anchor="middle">via USB-C adapter</text>
+    <text x="838" y="211" font-size="12.5" fill="#64748b" text-anchor="middle">installed in home folder</text>
+
+    <rect x="978" y="140" width="210" height="86" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+    <text x="1083" y="170" font-size="16" font-weight="700" fill="#1e3a8a" text-anchor="middle">Input level set on Mac</text>
+    <text x="1083" y="193" font-size="12.5" fill="#1e40af" text-anchor="middle">System Settings › Sound › Input</text>
+    <text x="1083" y="211" font-size="12.5" fill="#1e40af" text-anchor="middle">healthy trigger ~ Vol 2,000</text>
+  </g>
+  <!-- arrows row 1 -->
+  <line x1="234" y1="183" x2="278" y2="183" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="480" y1="183" x2="524" y2="183" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="502" y="168" font-size="11.5" fill="#475569" text-anchor="middle">3.5 mm</text>
+  <line x1="700" y1="183" x2="744" y2="183" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="722" y="168" font-size="11.5" fill="#475569" text-anchor="middle">USB</text>
+  <line x1="930" y1="183" x2="974" y2="183" stroke="#475569" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+
+  <!-- ============ ZONE 2 : ON THE MAC ============ -->
+  <rect x="30" y="278" width="1180" height="196" rx="14" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.5"/>
+  <text x="52" y="306" font-size="13" font-weight="700" letter-spacing="2" fill="#15803d">ON THE MAC — ALWAYS ON, HANDS OFF</text>
+
+  <rect x="52" y="322" width="330" height="128" rx="10" fill="#ffffff" stroke="#86efac" stroke-width="1.5"/>
+  <text x="72" y="352" font-size="17" font-weight="700" fill="#0f172a">recorder.py — PyAudio VOX</text>
+  <text x="72" y="378" font-size="13" fill="#334155">48 kHz mono · USB input auto-detected</text>
+  <text x="72" y="400" font-size="13" fill="#334155">RMS over 500 starts a recording</text>
+  <text x="72" y="422" font-size="13" fill="#334155">3 s silence stops · 90 s cap · under 1 s discarded</text>
+
+  <rect x="432" y="322" width="240" height="128" rx="10" fill="#ffffff" stroke="#86efac" stroke-width="1.5"/>
+  <text x="452" y="352" font-size="17" font-weight="700" fill="#0f172a">clips/</text>
+  <text x="452" y="378" font-size="13" fill="#334155">WAV — uncompressed master</text>
+  <text x="452" y="400" font-size="13" fill="#334155">MP3 — small copy (~9× smaller)</text>
+  <text x="452" y="422" font-size="13" fill="#334155">named by date + time</text>
+
+  <rect x="722" y="322" width="220" height="128" rx="10" fill="#ffffff" stroke="#86efac" stroke-width="1.5"/>
+  <text x="742" y="352" font-size="17" font-weight="700" fill="#0f172a">launchd agent</text>
+  <text x="742" y="378" font-size="13" fill="#334155">starts at login (RunAtLoad)</text>
+  <text x="742" y="400" font-size="13" fill="#334155">restarts on crash (KeepAlive)</text>
+  <text x="742" y="422" font-size="13" fill="#334155">+ caffeinate: Mac never sleeps</text>
+
+  <rect x="992" y="322" width="196" height="128" rx="10" fill="#ffffff" stroke="#86efac" stroke-width="1.5"/>
+  <text x="1012" y="352" font-size="17" font-weight="700" fill="#0f172a">firelogger.log</text>
+  <text x="1012" y="378" font-size="13" fill="#334155">every trigger + save,</text>
+  <text x="1012" y="400" font-size="13" fill="#334155">written live (python -u)</text>
+  <text x="1012" y="422" font-size="13" fill="#334155">config.json sets levels</text>
+
+  <line x1="384" y1="386" x2="428" y2="386" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="674" y1="386" x2="718" y2="386" stroke="#475569" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+  <line x1="944" y1="386" x2="988" y2="386" stroke="#475569" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+
+  <!-- connector zone1 -> zone2 -->
+  <path d="M 838 226 L 838 262 L 217 262 L 217 318" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- ============ ZONE 3 : PHASE 2 ============ -->
+  <rect x="30" y="498" width="1180" height="158" rx="14" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="8 5"/>
+  <text x="200" y="526" font-size="13" font-weight="700" letter-spacing="2" fill="#b45309">PHASE 2 — DASHBOARD CLICK-TO-LISTEN · PREPARED, NOT LIVE</text>
+
+  <rect x="52" y="542" width="230" height="86" rx="10" fill="#ffffff" stroke="#fcd34d" stroke-width="1.5"/>
+  <text x="167" y="578" font-size="16" font-weight="600" fill="#0f172a" text-anchor="middle">MP3 upload</text>
+  <text x="167" y="601" font-size="12.5" fill="#64748b" text-anchor="middle">built in · currently OFF</text>
+
+  <rect x="352" y="542" width="270" height="86" rx="10" fill="#ffffff" stroke="#fcd34d" stroke-width="1.5"/>
+  <text x="487" y="572" font-size="16" font-weight="600" fill="#0f172a" text-anchor="middle">Supabase (dashboard project)</text>
+  <text x="487" y="595" font-size="12.5" fill="#64748b" text-anchor="middle">dispatch-audio bucket · radio_clips table</text>
+  <text x="487" y="613" font-size="12.5" fill="#64748b" text-anchor="middle">public read · key stays on the Mac</text>
+
+  <rect x="692" y="542" width="240" height="86" rx="10" fill="#ffffff" stroke="#fcd34d" stroke-width="1.5"/>
+  <text x="812" y="572" font-size="16" font-weight="600" fill="#0f172a" text-anchor="middle">Firehouse dashboard</text>
+  <text x="812" y="595" font-size="12.5" fill="#64748b" text-anchor="middle">clips time-matched to calls</text>
+  <text x="812" y="613" font-size="12.5" fill="#64748b" text-anchor="middle">-60 s / +4 min of dispatch time</text>
+
+  <rect x="1002" y="542" width="186" height="86" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+  <polygon points="1030,566 1030,590 1050,578" fill="#92400e"/>
+  <text x="1112" y="584" font-size="16" font-weight="700" fill="#92400e" text-anchor="middle">Click to listen</text>
+  <text x="1095" y="601" font-size="12.5" fill="#92400e" text-anchor="middle">on the call screen · no autoplay</text>
+
+  <line x1="284" y1="585" x2="348" y2="585" stroke="#b45309" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrD)"/>
+  <line x1="624" y1="585" x2="688" y2="585" stroke="#b45309" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrD)"/>
+  <line x1="934" y1="585" x2="998" y2="585" stroke="#b45309" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrD)"/>
+
+  <!-- connector zone2 -> zone3 -->
+  <path d="M 552 450 L 552 482 L 167 482 L 167 538" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrD)"/>
+
+  <text x="40" y="684" font-size="12.5" fill="#94a3b8">Replaces a Raspberry Pi build · Same VOX settings as the original script · Install lives in the home folder — macOS blocks background agents running from the Desktop (exit 78).</text>
+</svg>

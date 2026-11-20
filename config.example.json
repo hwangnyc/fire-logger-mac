@@ -1,0 +1,1 @@
+{"bucket":"dispatch-audio","clips_table":"radio_clips","make_mp3":true,"max_record_seconds":90,"mic_id":null,"min_record_seconds":1.0,"sample_rate":48000,"silence_timeout":3,"supabase_key":"","supabase_url":"","threshold":500,"upload_enabled":false}

@@ -1,0 +1,9 @@
+# Local runtime state — never commit these
+config.json
+firelogger.log
+clips/
+.venv/
+__pycache__/
+*.wav
+*.mp3
+.DS_Store
