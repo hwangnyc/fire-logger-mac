@@ -46,6 +46,17 @@ On split-screen active-call cards, add a small `🎧` next to the call
 type when a clip has matched, so people know audio exists before
 they tap the call.
 
+## Change 5 — transcript under the player
+The clips fetch (`select=*`) already brings `transcript_raw` and
+`transcript_clean` along. In the same `.info-audio` block, under the
+player:
+- If `transcript_clean` is present, show it, labeled
+  "Transcript (AI-cleaned, CAD-checked)".
+- Show `transcript_raw` too, in a collapsed "as heard" line —
+  the raw is never hidden or replaced; cleanup is an aid, the
+  audio and the raw text are the record.
+- If only the raw exists, show it alone, labeled "Transcript".
+
 ## What does NOT change
 - CAD ingest, incidents table, heartbeat, passphrase gate: untouched.
 - No keys added to the page — it already reads with the anon key,

@@ -25,6 +25,11 @@ create table if not exists public.radio_clips (
   public_url text not null,                 -- playable URL for the dashboard
   incident_number text,                     -- filled in later if we add hard matching;
                                             -- v1 matches by time in the dashboard itself
+  transcript_raw text,                      -- Whisper's transcript, exactly as heard
+  transcript_clean text,                    -- local-model cleanup, CAD-anchored; set ONLY
+                                            -- when the digit check passed (every number
+                                            -- traces to the raw transcript or the CAD
+                                            -- record). The raw is always kept alongside.
   created_at timestamptz not null default now()
 );
 
