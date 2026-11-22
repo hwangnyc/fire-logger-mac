@@ -29,6 +29,9 @@ Radio → Minitor amplified base → 3.5 mm cable → Sabrent AU-MMSA (mic in)
 - **caffeinate** — the recorder runs under Apple's `caffeinate -i`,
   so the Mac never idle-sleeps while logging. The display can sleep.
 - **firelogger.log** — live, unbuffered log of every trigger/save.
+- **transcriber.py** — a second, independent agent (see
+  "Transcription" below) that turns every clip into text with a
+  locally hosted Whisper model. The recorder never waits on it.
 
 ## Hardware
 
@@ -59,6 +62,46 @@ Config lives in `config.json` (created on first run;
 `config.example.json` shows the defaults). **Never commit
 `config.json`** — if you enable the dashboard upload, its key lives
 there and nowhere else.
+
+## Transcription (Whisper, fully local)
+
+A separate launchd agent (`com.henry.firetranscriber`) runs
+**transcriber.py**, which keeps the Whisper large model
+(`whisper-large-v3-mlx`, via MLX on Apple Silicon) loaded in memory
+and watches the clips folder. Each new clip gets a transcript beside
+it — `<clip>.txt` plus a timed `<clip>.whisper.json` — and a line in
+`transcriber.log`. Nothing leaves the Mac. It has its own Python
+environment (`.venv-whisper`) and never touches the recorder: if
+transcription breaks, recording doesn't notice.
+
+Install (after the recorder works):
+```
+bash INSTALL-TRANSCRIBER.command
+```
+Stop it with `STOP-TRANSCRIBER.command`. Settings ride along in the
+recorder's `config.json`: `whisper_model` (default `large`) and
+`whisper_prompt` — a vocabulary hint with local names ("Firecom
+dispatch for Albertson and Williston Park. Signal 9A. Signal 110."),
+which measurably helps proper nouns.
+
+Field lessons baked into v5, from the first real call (#499,
+Nov 21, 2026 — a school auto alarm whose two airings were recorded
+and transcribed hands-free):
+
+- Whisper's decoder can **collapse on the opening alert tones** and
+  return "!" for loud, clear audio. Every pass now runs with
+  `condition_on_previous_text=False`, and an empty result on
+  measurably loud audio triggers a rescue ladder: retry without the
+  prompt, then retry in 10-second chunks. Verified live: the failed
+  airing was recovered by the ladder (the no-prompt retry).
+- Tone-trimming was tried and **rejected**: at 100 ms resolution,
+  tones and speech interleave too closely to cut safely.
+- Even rescued, radio transcripts are **drafts**. Fast, clipped
+  dispatch speech garbles street names and invents filler. The
+  planned next stage anchors cleanup to the CAD record (call type,
+  address, cross streets from the dispatch email) with a hard rule:
+  no number may appear in a cleaned transcript unless it traces to
+  the raw transcript or the CAD record. The audio stays the record.
 
 ### Set the level on the Mac, not the radio
 
@@ -102,4 +145,8 @@ dashboard.
 - `INSTALL-AUTOSTART.command` / `STOP-FIRE-LOGGER.command`
 - `com.henry.firelogger.plist` — launchd template (`__FIRELOGGER_DIR__`
   is filled in by the installer)
+- `transcriber.py` — the warm Whisper transcription daemon (v5)
+- `run-transcriber.sh` — its launchd entry point
+- `INSTALL-TRANSCRIBER.command` / `STOP-TRANSCRIBER.command`
+- `com.henry.firetranscriber.plist` — its launchd template
 - `dashboard/` — phase-2 SQL + patch plan
