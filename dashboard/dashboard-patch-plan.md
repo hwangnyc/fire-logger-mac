@@ -1,68 +1,66 @@
-# Dashboard patch plan — "▶ Listen to the call"
-### Prepared, NOT applied. Live dashboard changes only on Henry's go.
+# Dashboard audio — as built
+### Status: LIVE. Applied Nov 22, 2026 (originally a plan; this file now records what shipped.)
 
 Repo: `hwangnyc/albertson-fire-dashboard`, file: `index.html`
 Supabase project: `sddzkerxgkdnafequvmv` (the dashboard's own project —
 not the old Pi logger's project)
 
-## Prerequisite
-Run `dashboard-setup.sql` in that project's SQL Editor (creates the
-`dispatch-audio` bucket + `radio_clips` table, read-only for anon).
+## Prerequisite — done
+`dashboard-setup.sql` was run in that project's SQL Editor on
+Nov 22, 2026: public `dispatch-audio` bucket + `radio_clips` table,
+anon read-only. Uploads come only from the Mac, using a secret key
+stored only on that Mac — there is deliberately no anon insert policy.
 
-## Change 1 — fetch clips with the calls
-In the same refresh that loads incidents
-(`api("/incidents?select=*&order=created_at.desc&limit=25")`), also load:
-```js
-api("/radio_clips?select=*&order=started_at.desc&limit=50")
-```
-Store in a `clips` array next to `incidents`. If the table doesn't
-exist yet, the fetch fails silently and the dashboard behaves exactly
-as today (same graceful-degradation pattern as pi_heartbeats).
+## What shipped
 
-## Change 2 — time-match (no manual linking)
-A clip belongs to a call when its start time is:
-- no more than 60 seconds **before** the call's `dispatched_at`, and
-- no more than 4 minutes **after** it.
+1. **Fetch clips with the calls.** The refresh that loads incidents
+   also loads `radio_clips?select=*&order=started_at.desc&limit=50`.
+   If the table is missing, the fetch fails silently and the dashboard
+   behaves exactly as before (same pattern as pi_heartbeats).
 
-Radio dispatch and the CAD timestamp are the same event, so this
-window is generous but safe: Albertson rarely has two calls inside
-4 minutes, and if it does, the closer dispatch wins (assign each clip
-to the nearest dispatched_at).
+2. **Time-match (no manual linking).** A clip belongs to the call
+   whose dispatch time is nearest, when the clip starts within
+   −60 s/+4 min of `dispatched_at`. Clips matching nothing are
+   simply not shown.
 
-## Change 3 — the player, in the call detail pane
-In `renderInfo()`, after the incident-number line, for each matched
-clip add:
-```html
-<div class="info-audio">
-  <div>🎧 Dispatch audio — 8:41:07 PM</div>
-  <audio controls preload="none" src="<public_url>"></audio>
-</div>
-```
-Native `<audio controls>` = click to play, pause, scrub. No autoplay
-(the TV shouldn't blare audio on its own; a person clicks).
+3. **The player — an inline pill in the call detail.** One pill per
+   matched clip, labeled by airing ("Airing 1 · 8:48 PM"), holding:
+   a round play/pause button, a stop button beside it (pause +
+   rewind), a click-to-seek progress bar, and a `0:00 / 0:21` time
+   readout. Only one clip plays at a time — starting one pauses the
+   other. No autoplay: a person presses play.
+   (This is the third iteration, all on Nov 22, 2026: native
+   `<audio controls>` blocks → a popup player with synced transcript
+   highlighting → this pill, which is the design that stayed.)
 
-## Change 4 — split-screen hint (optional, same patch)
-On split-screen active-call cards, add a small `🎧` next to the call
-type when a clip has matched, so people know audio exists before
-they tap the call.
+4. **Split-screen hint.** Split-screen call cards show a 🎧 when a
+   clip has matched the call.
 
-## Change 5 — transcript under the player
-The clips fetch (`select=*`) already brings `transcript_raw` and
-`transcript_clean` along. In the same `.info-audio` block, under the
-player:
-- If `transcript_clean` is present, show it, labeled
-  "Transcript (AI-cleaned, CAD-checked)".
-- Show `transcript_raw` too, in a collapsed "as heard" line —
-  the raw is never hidden or replaced; cleanup is an aid, the
-  audio and the raw text are the record.
-- If only the raw exists, show it alone, labeled "Transcript".
+5. **Transcripts — stored, deliberately not displayed.**
+   `radio_clips` carries `transcript_raw` / `transcript_clean`, and
+   backfilled rows hold their raw text, but the UI shows none of it:
+   raw Whisper output on dispatch audio isn't good enough yet.
+   Display returns when the CAD-anchored cleanup stage proves out.
+   The audio is the record.
 
-## What does NOT change
+Commits on the dashboard repo: `9c52c99` (first player),
+`3b753b7` (popup, superseded), `e413ba6` (the pill + detail-pane
+spacing fixes — current).
+
+## Verified
+- Nov 22, 2026, 12:08 PM ET test transmission: recorder log
+  `☁️ Uploaded: …/dispatch-audio/2026-11-22_12-08-14.mp3`, the
+  `radio_clips` row landed with the exact timestamp, and the public
+  MP3 URL returned `200 audio/mpeg`.
+- Real call #499 (Nov 21, 2026) backfilled the same evening: both
+  airings at +12 s/+39 s from dispatch — inside the match window —
+  and the live page renders both pills with correct durations.
+
+## What did NOT change
 - CAD ingest, incidents table, heartbeat, passphrase gate: untouched.
-- No keys added to the page — it already reads with the anon key,
-  and the bucket/table are anon-read by the SQL above.
-- Uploads never go through the web page; only Henry's Mac writes.
+- No keys added to the page — it reads with the anon key, and the
+  bucket/table are anon-read by the SQL above.
 
 ## Rollback
-Revert the one `index.html` commit. The bucket/table can stay
-(unused) or be dropped with two SQL lines.
+Revert the `index.html` commits. The bucket/table can stay (unused)
+or be dropped with two SQL lines.

@@ -1,7 +1,8 @@
 -- Fire Logger -> Dashboard setup
 -- Run ONCE in the DASHBOARD Supabase project (sddzkerxgkdnafequvmv),
 -- SQL Editor. Creates everything new; touches no existing tables.
--- *** DO NOT RUN until Henry says go — this is a live-system change. ***
+-- Status: RUN on Nov 22, 2026 — bucket + table are live.
+-- Safe to re-run: the statements below are idempotent.
 
 -- 1. Storage bucket for the audio clips (public so the dashboard can play them)
 insert into storage.buckets (id, name, public)
