@@ -18,6 +18,7 @@ Department; runs 24/7 on an M4 Mac mini.
 ```
 Radio → Minitor amplified base → 3.5 mm cable → Sabrent AU-MMSA (mic in)
       → USB → Mac mini → recorder.py (PyAudio VOX) → clips/ (WAV + MP3)
+      → MP3 upload → Supabase → firehouse dashboard (player pill on the call)
 ```
 
 - **recorder.py** — the VOX recorder. Sound louder than `threshold`
@@ -126,16 +127,51 @@ mean noise, not signal.
   looked dead while it was actually recording. The clips folder's
   contents (and `python -u`) tell the truth.
 
-## Phase 2 — dashboard click-to-listen (prepared, not live)
+## Phase 2 — dashboard click-to-listen (LIVE since Nov 22, 2026)
 
-The end goal: when a call appears on the firehouse dashboard screen,
-a ▶ button plays the dispatch audio. The recorder already knows how
-to upload (`upload_enabled` + a key in `config.json`, on the Mac
-only). The dashboard side — a Supabase storage bucket + `radio_clips`
-table, and a small dashboard patch that time-matches clips to calls
-(clip start within −60 s/+4 min of dispatch time) — is in
-[`dashboard/`](dashboard/). It has **not** been applied to the live
-dashboard.
+When a call appears on the firehouse dashboard, its detail pane
+carries an inline player pill for the dispatch audio: play/pause and
+stop in the same pill, a seekable progress bar, and the clip length.
+One pill per airing (every dispatch airs twice — tones, message,
+tones, the same message re-read live), and only one plays at a time.
+
+How it flows:
+
+- The recorder uploads each new clip's MP3 to the dashboard's
+  Supabase project (public `dispatch-audio` bucket) and inserts a
+  `radio_clips` row with the clip's start time. Uploads use a secret
+  key that lives only in the Mac's `config.json`; the web page never
+  writes anything.
+- The dashboard fetches clips alongside calls and time-matches them:
+  a clip belongs to the call whose dispatch time is within
+  −60 s/+4 min of the clip's start (nearest dispatch wins).
+- Setup was one SQL run (`dashboard/dashboard-setup.sql` — bucket +
+  table, anon read-only) plus the key paste and flipping
+  `upload_enabled` in `config.json`. Verified end-to-end Nov 22,
+  2026 with a live test transmission, then on real call #499
+  (backfilled — see below). The as-built notes are in
+  [`dashboard/dashboard-patch-plan.md`](dashboard/dashboard-patch-plan.md).
+
+Transcripts: `radio_clips` already carries `transcript_raw` /
+`transcript_clean` columns, and #499's rows hold its raw transcripts —
+but the dashboard does **not** display them. Raw Whisper output on
+dispatch audio isn't good enough to put in front of the department
+yet; display is on hold until the CAD-anchored cleanup stage proves
+out. The audio is the record.
+
+Backfill: clips recorded before the upload switch was flipped don't
+upload retroactively. A one-off script (same config, same upload
+calls, explicit timestamps, skip-if-already-uploaded) backfilled
+#499's two airings on Nov 22, 2026.
+
+Still to come:
+
+- **Transcript upload (phase 2b)** — the transcriber updates each
+  clip's `radio_clips` row with its transcript when it's ready.
+- **CAD-anchored cleanup** — a local Ollama model rewrites the raw
+  transcript against the CAD record; a cleaned text is accepted only
+  if every number in it traces to the raw transcript or the CAD
+  record. Test package built; first Mac run pending.
 
 ## Files
 
@@ -149,4 +185,4 @@ dashboard.
 - `run-transcriber.sh` — its launchd entry point
 - `INSTALL-TRANSCRIBER.command` / `STOP-TRANSCRIBER.command`
 - `com.henry.firetranscriber.plist` — its launchd template
-- `dashboard/` — phase-2 SQL + patch plan
+- `dashboard/` — phase-2 SQL (run Nov 22, 2026) + as-built notes
